@@ -1,6 +1,20 @@
 ---
-# For Python 3, use python3-pip.
+# For Python 2, use python-pip.
 pip_package: python3-pip
 pip_executable: "{{ 'pip3' if pip_package.startswith('python3') else 'pip' }}"
 
+pip_virtualenv_packages: 
+  - virtualenv
+  - python3-venv
+
 pip_install_packages: []
+
+# pip_umask: "0022"
+
+# to install all defined packages into a virtualenv, define the path
+# pip_virtualenv: /my-virtual-env
+
+# additional virtualenv options
+# pip_virtualenv_command: 
+# pip_virtualenv_python: python3.3
+# pip_virtualenv_site_packages: yes

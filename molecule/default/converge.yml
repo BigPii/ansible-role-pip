@@ -10,6 +10,11 @@
         version: "1.0.18"
       # Test installing a package by name.
       - colorama
+      # Test installing into a virtualenv
+      - name: pip-install-test
+        virtualenv: /virtualenv
+      - name: pip-install-test
+        version: 0.5.0
 
   pre_tasks:
     - name: Update apt cache.
@@ -23,6 +28,50 @@
         (ansible_os_family == 'RedHat') and (ansible_distribution_major_version | int < 8)
         or (ansible_distribution == 'Debian') and (ansible_distribution_major_version | int < 10)
         or (ansible_distribution == 'Ubuntu') and (ansible_distribution_major_version | int < 18)
-
+  #tasks:
+  #  - name: "Include molecule_test"
+  #    include_role:
+  #      name: "ansible-role-pip"
   roles:
-    - role: geerlingguy.pip
+    - role: ansible-role-pip
+
+- name: Converge with virtualenv
+  hosts: all
+  become: true
+
+  vars:
+    # set virtualenv for all packages
+    pip_virtualenv: /venv
+    pip_virtualenv_packages:
+      - virtualenv
+      - python3-venv
+    pip_umask: "0022"
+    pip_install_packages:
+      # Test installing a specific version of a package.
+      - name: ipaddress
+        version: "1.0.18"
+      # Test installing a package by name.
+      - colorama
+      # Test installing into a different virtualenv
+      - name: pip-install-test
+        virtualenv: /anothervenv
+      # Install a package twice in different virtualenvs with a different command
+      - name: pip-install-test
+        version: 0.5.0
+        virtualenv: /yetanothervenv
+        virtualenv_command: python3 -m venv
+
+  pre_tasks:
+    - name: Update apt cache.
+      apt: update_cache=true cache_valid_time=600
+      when: ansible_os_family == 'Debian'
+
+    - name: Set package name for older OSes.
+      set_fact:
+        pip_package: python-pip
+      when: >
+        (ansible_os_family == 'RedHat') and (ansible_distribution_major_version | int < 8)
+        or (ansible_distribution == 'Debian') and (ansible_distribution_major_version | int < 10)
+        or (ansible_distribution == 'Ubuntu') and (ansible_distribution_major_version | int < 18)
+  roles:
+    - role: ansible-role-pip
